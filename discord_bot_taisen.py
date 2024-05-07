@@ -36,50 +36,59 @@ async def on_voice_state_update(member, before, after):
 
         # 退室通知
         if before.channel is not None and before.channel.id in announceChannelIds:
-            await botRoom.send("**" + before.channel.name + "** から、__" + member.display_name + "__  が抜けました！")
-            participants.remove(member.display_name)
+            await botRoom.send('**' + before.channel.name + '** から、__' + member.display_name + '__  が抜けました！')
+            for name_index, member_name in enumerate(participants):
+                if member_name == member.display_name:
+                    del participants[name_index]
 
         # 入室通知
         if after.channel is not None and after.channel.id in announceChannelIds:
-            await botRoom.send("**" + after.channel.name + "** に、__" + member.display_name + "__  が参加しました！")
-            participants.append(member.display_name)
+            await botRoom.send('**' + after.channel.name + '** に、__' + member.display_name + '__  が参加しました！')
+            member_info = [member.display_name, 'LR']
+            participants.append(member_info)
 
 @bot.command()
-async def join_members(ctx):
-    voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
-    for member_name in voicechat_members:
-        if member_name not in participants:
-            participants.append(member_name)
-            await ctx.send(f'{member_name}が参加しました。')
-
-@bot.command()
-async def join(ctx, name, lr):
-    if name not in participants:
-        participants.append(name)
-        participantslr.append(lr)
-        if lr == 'l':
-            await ctx.send(f'{name}が左固定になりました')
-        elif lr == 'r':
-            await ctx.send(f'{name}:が右固定になりました')
-        else:
-            await ctx.send(f'{name}が参加しました。')
-    else:
-        await ctx.send(f'{name} は既に参加しています。')
-
-@bot.command()
-async def leave(ctx, name):
-    if name not in participants:
-        await ctx.send(f'{name} は既にいません。')
-    else:
-        participants.remove(name)
-        await ctx.send(f'{name} を削除しました。')
-
-@bot.command()
-async def list_participants(ctx):
+async def change(ctx, num, lr):
+    num = int(num)
     if participants:
-        await ctx.send("参加者リスト:\n" + "\n".join(participants))
+        if len(participants) > num:
+            if lr == 'L':
+                participants[num][1] = 'L'
+                await ctx.send(f'{participants[num][0]}が左固定になりました')
+            elif lr == 'R':
+                participants[num][1] = 'R'
+                await ctx.send(f'{participants[num][0]}:が右固定になりました')
+            elif lr == 'LR':
+                participants[num][1] = 'LR'
+                await ctx.send(f'{participants[num][0]}:が固定解除されました')
+            else:
+                await ctx.send('L、R、LRのいずれかを大文字で入力してください')
+        else:
+            await ctx.send('メンバーのインデックス番号と合いません。/list_memで確認してください')
+
     else:
-        await ctx.send("参加者はいません。")
+        await ctx.send('メンバーが参加していません。/join_memで登録してください')
+
+@bot.command()
+async def leave(ctx, num):
+    if participants:
+        if len(participants) <= int(num):
+            await ctx.send('メンバーのインデックス番号と合いません。/list_memで確認してください')
+        else:
+            await ctx.send(f'{participants[int(num)][0]} を削除しました。')
+            del participants[int(num)]
+    else:
+        await ctx.send('メンバーが参加していません。/join_memで登録してください')
+
+@bot.command()
+async def list_mem(ctx):
+    if participants:
+        mem_list_mes = '参加者リスト:\n''
+        for mem_index, mem_info in enumerate(participants):
+            mem_list_mes += str(mem_index) + ":\t" + mem_info[0] + ":" + mem_info[1] + "\n"
+        await ctx.send(mem_list_mes)
+    else:
+        await ctx.send('メンバーが参加していません。/join_memで登録してください')
 
 @bot.command()
 async def hqstart(ctx):
@@ -96,15 +105,25 @@ async def hqstart(ctx):
     await ctx.send("Enter キーを押すと参加者が表示されます。")
 
 @bot.command()
-async def aaa(ctx):
-    global current_index, waiting_for_start,match_mem
-    if waiting_for_start:
-        if match_mem:
-            await ctx.send(match_mem[current_index])
-            current_index = (current_index + 1) % len(match_mem)
-        else:
-            await ctx.send("参加者がいません。")
-#    await bot.process_commands(message)
+async def join_mem(ctx):
+    # ボイスチャットに参加しているメンバーを取得
+    voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
+    if participants:
+        #既にメンバーが登録されている場合は足りない人のみ追加
+        for member_name in voicechat_members:
+            for join_name in participants:
+                if member_name not in join_name:
+                    #登録時は左右どちらでも可として登録
+                    member_info = [member_name, 'LR']
+                    participants.append(member_info)
+                    await ctx.send(f'{member_name}が参加しました。')
+    else:
+        #メンバーが登録されてない場合は新規で全員追加
+        for member_name in voicechat_members:
+            #登録時は左右どちらでも可として登録
+            member_info = [member_name, 'LR']
+            participants.append(member_info)
+            await ctx.send(f'{member_name}が参加しました。')#    await bot.process_commands(message)
 
 # Botの起動とDiscordサーバーへの接続
 bot.run(TOKEN)
