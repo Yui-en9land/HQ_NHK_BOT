@@ -15,6 +15,7 @@ current_index = 0
 waiting_for_start = False
 
 TOKEN = ''
+CHAT_CHANNEL = ''
 
 @bot.event
 async def on_ready():
@@ -22,18 +23,46 @@ async def on_ready():
 
 
 
+@bot.event
+async def on_voice_state_update(member, before, after):
+
+    # チャンネルへの入室ステータスが変更されたとき（ミュートON、OFFに反応しないように分岐）
+    if before.channel != after.channel:
+        # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
+        botRoom = bot.get_channel(CHAT_CHANNEL)
+
+        # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
+        announceChannelIds = [CHAT_CHANNEL]
+
+        # 退室通知
+        if before.channel is not None and before.channel.id in announceChannelIds:
+            await botRoom.send("**" + before.channel.name + "** から、__" + member.display_name + "__  が抜けました！")
+            participants.remove(member.display_name)
+
+        # 入室通知
+        if after.channel is not None and after.channel.id in announceChannelIds:
+            await botRoom.send("**" + after.channel.name + "** に、__" + member.display_name + "__  が参加しました！")
+            participants.append(member.display_name)
+
+@bot.command()
+async def join_members(ctx):
+    voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
+    for member_name in voicechat_members:
+        if member_name not in participants:
+            participants.append(member_name)
+            await ctx.send(f'{member_name}が参加しました。')
+
 @bot.command()
 async def join(ctx, name, lr):
     if name not in participants:
         participants.append(name)
         participantslr.append(lr)
         if lr == 'l':
-            await ctx.send(f'{name}:左固定 が参加しました。')
+            await ctx.send(f'{name}が左固定になりました')
         elif lr == 'r':
-            await ctx.send(f'{name}:右固定 が参加しました。')
+            await ctx.send(f'{name}:が右固定になりました')
         else:
             await ctx.send(f'{name}が参加しました。')
-
     else:
         await ctx.send(f'{name} は既に参加しています。')
 
