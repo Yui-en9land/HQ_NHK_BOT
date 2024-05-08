@@ -150,16 +150,16 @@ async def hqstart(ctx):
     if member_num == 2:
         named_table = table_make(match_table2, participants)
     elif member_num == 3:
-        named_table = table_make(match_table2, participants)
+        named_table = table_make(match_table3, participants)
     elif member_num == 4:
-        named_table = table_make(match_table2, participants)
+        named_table = table_make(match_table4, participants)
     elif member_num == 5:
-        named_table = table_make(match_table2, participants)
+        named_table = table_make(match_table5, participants)
     else:
         await ctx.send('メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
         return
     #対戦表作成後、最初の1試合はここで通知
-    await ctx.send('M' + str(total_num) + ': ' + named_table[match_num][0] + ' vs ' + named_table[match_num][1])
+    await ctx.send('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     match_history.append(named_table[match_num])
     match_num += 1
     total_num += 1
@@ -168,10 +168,13 @@ async def hqstart(ctx):
 async def next(ctx):
     global participants
     global match_num, total_num, match_history
-    await ctx.send('M' + str(total_num) + ': ' + named_table[match_num][0] + ' vs ' + named_table[match_num][1])
+    # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
+    if match_num >= len(named_table):
+        match_num = 0
+    await ctx.send('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
+    # 対戦履歴を格納
     match_history.append(named_table[match_num])
-    if named_table >= len(named_table):
-        match_num += 1
+    match_num += 1
     total_num += 1
 
 @bot.command()
