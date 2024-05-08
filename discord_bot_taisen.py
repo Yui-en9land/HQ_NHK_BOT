@@ -55,7 +55,7 @@ async def on_ready():
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-
+    global participants
     # チャンネルへの入室ステータスが変更されたとき（ミュートON、OFFに反応しないように分岐）
     if before.channel != after.channel:
         # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
@@ -68,20 +68,24 @@ async def on_voice_state_update(member, before, after):
         if before.channel is not None and before.channel.id in announceChannelIds:
             await botRoom.send('**' + before.channel.name + '** から、__' + member.display_name + '__  が抜けました！')
             for name_index, member_name in enumerate(participants):
-                if member_name == member.display_name:
+                if member_name[0] == member.display_name:
                     del participants[name_index]
 
         # 入室通知
         if after.channel is not None and after.channel.id in announceChannelIds:
             await botRoom.send('**' + after.channel.name + '** に、__' + member.display_name + '__  が参加しました！')
+            check_name = []
             for join_name in participants:
-                if member.display_name not in join_name:
-                    #登録時は左右どちらでも可として登録
-                    member_info = [member.display_name, 'LR']
-                    participants.append(member_info)
+                check_name.append(join_name[0])
+            if member.display_name not in check_name:
+                # 登録時は左右どちらでも可として登録
+                member_info = [member.display_name, 'LR']
+                participants.append(member_info)
+
 
 @bot.command()
 async def change(ctx, num, lr):
+    global participants
     num = int(num)
     if participants:
         if len(participants) > num:
@@ -104,15 +108,19 @@ async def change(ctx, num, lr):
 
 @bot.command()
 async def join(ctx, name):
+    global participants
+    check_name = []
     for join_name in participants:
-        if name not in join_name:
-            # 登録時は左右どちらでも可として登録
-            member_info = [name, 'LR']
-            participants.append(member_info)
-
+        check_name.append(join_name[0])
+    if name not in check_name:
+        # 登録時は左右どちらでも可として登録
+        member_info = [name, 'LR']
+        participants.append(member_info)
+        await ctx.send(name + 'を追加しました')
 
 @bot.command()
 async def leave(ctx, num):
+    global participants
     if participants:
         if len(participants) <= int(num):
             await ctx.send('メンバーのインデックス番号と合いません。/list_memで確認してください')
@@ -124,6 +132,7 @@ async def leave(ctx, num):
 
 @bot.command()
 async def list_mem(ctx):
+    global participants
     if participants:
         mem_list_mes = '参加者リスト:\n'
         for mem_index, mem_info in enumerate(participants):
@@ -134,6 +143,7 @@ async def list_mem(ctx):
 
 @bot.command()
 async def hqstart(ctx):
+    global participants
     global named_table, match_num, total_num
     match_num = 0
     member_num = len(participants)
@@ -156,6 +166,7 @@ async def hqstart(ctx):
 
 @bot.command()
 async def next(ctx):
+    global participants
     global match_num, total_num, match_history
     await ctx.send('M' + str(total_num) + ': ' + named_table[match_num][0] + ' vs ' + named_table[match_num][1])
     match_history.append(named_table[match_num])
@@ -165,6 +176,7 @@ async def next(ctx):
 
 @bot.command()
 async def join_mem(ctx):
+    global participants
     # ボイスチャットに参加しているメンバーを取得
     voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
     if participants:
