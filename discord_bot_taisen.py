@@ -2,12 +2,16 @@ import discord
 import asyncio
 import token_id
 from discord.ext import commands
+#from discord import app_commands
+from discord import Option
 
 intents = discord.Intents.all()
 intents.reactions = True
 intents.guilds = True
 
-bot = commands.Bot(command_prefix='/', intents=intents)
+bot = discord.Bot()
+
+#bot = commands.Bot(command_prefix='/', intents=intents)
 
 participants = []
 match_mem = []
@@ -17,6 +21,8 @@ named_table = []
 match_num = 0
 total_num = 1
 match_history = []
+guild_id = token_id.guild_id
+
 
 match_table2 = [
     [0, 1], [1, 0]
@@ -36,11 +42,12 @@ match_table5 = [
     [1, 0], [3, 2], [0, 4], [2, 1], [4, 3], [2, 0], [3, 1], [4, 2], [3, 0], [4, 1]
 ]
 
+
 def table_make(match_table, participants):
     named_table = []
     for match_ind in match_table:
         if (participants[match_ind[0]][1] == 'R') or (participants[match_ind[1]][1] == 'L'):
-            #右固定または左固定がいる場合　左右を入れ替える
+            # 右固定または左固定がいる場合　左右を入れ替える
             named_table.append([participants[match_ind[0]][0], participants[match_ind[1]][0]])
 
         else:
@@ -52,6 +59,7 @@ def table_make(match_table, participants):
 @bot.event
 async def on_ready():
     print('Bot is ready.')
+
 
 @bot.event
 async def on_voice_state_update(member, before, after):
@@ -83,7 +91,7 @@ async def on_voice_state_update(member, before, after):
                 participants.append(member_info)
 
 
-@bot.command()
+@bot.slash_command(description="指定番号の参加者の左右の固定有無を設定します", guild_ids=guild_id)
 async def change(ctx, num, lr):
     global participants
     num = int(num)
@@ -106,7 +114,8 @@ async def change(ctx, num, lr):
     else:
         await ctx.send('メンバーが参加していません。/join_memで登録してください')
 
-@bot.command()
+
+@bot.slash_command(description="手動で参加者を追加します", guild_ids=guild_id)
 async def join(ctx, name):
     global participants
     check_name = []
@@ -118,7 +127,8 @@ async def join(ctx, name):
         participants.append(member_info)
         await ctx.send(name + 'を追加しました')
 
-@bot.command()
+
+@bot.slash_command(description="指定番号の参加者を削除します", guild_ids=guild_id)
 async def leave(ctx, num):
     global participants
     if participants:
@@ -130,7 +140,8 @@ async def leave(ctx, num):
     else:
         await ctx.send('メンバーが参加していません。/join_memで登録してください')
 
-@bot.command()
+
+@bot.slash_command(description="参加者と番号、左右固定有無を表示します", guild_ids=guild_id)
 async def list_mem(ctx):
     global participants
     if participants:
@@ -141,7 +152,8 @@ async def list_mem(ctx):
     else:
         await ctx.send('メンバーが参加していません。/join_memで登録してください')
 
-@bot.command()
+
+@bot.slash_command(description="対戦表を作成し試合を開始します。人数が変わった場合も実行してください", guild_ids=guild_id)
 async def hqstart(ctx):
     global participants
     global named_table, match_num, total_num
@@ -156,15 +168,17 @@ async def hqstart(ctx):
     elif member_num == 5:
         named_table = table_make(match_table5, participants)
     else:
-        await ctx.send('メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
+        await ctx.send(
+            'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
         return
-    #対戦表作成後、最初の1試合はここで通知
+    # 対戦表作成後、最初の1試合はここで通知
     await ctx.send('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     match_history.append(named_table[match_num])
     match_num += 1
     total_num += 1
 
-@bot.command()
+
+@bot.slash_command(description="次の試合のアナウンスをします", guild_ids=guild_id)
 async def next(ctx):
     global participants
     global match_num, total_num, match_history
@@ -177,27 +191,29 @@ async def next(ctx):
     match_num += 1
     total_num += 1
 
-@bot.command()
+
+@bot.slash_command(description="ルームにいるメンバー全員を参加させます", guild_ids=guild_id)
 async def join_mem(ctx):
     global participants
     # ボイスチャットに参加しているメンバーを取得
     voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
     if participants:
-        #既にメンバーが登録されている場合は足りない人のみ追加
+        # 既にメンバーが登録されている場合は足りない人のみ追加
         for member_name in voicechat_members:
             for join_name in participants:
                 if member_name not in join_name:
-                    #登録時は左右どちらでも可として登録
+                    # 登録時は左右どちらでも可として登録
                     member_info = [member_name, 'LR']
                     participants.append(member_info)
                     await ctx.send(f'{member_name}が参加しました。')
     else:
-        #メンバーが登録されてない場合は新規で全員追加
+        # メンバーが登録されてない場合は新規で全員追加
         for member_name in voicechat_members:
-            #登録時は左右どちらでも可として登録
+            # 登録時は左右どちらでも可として登録
             member_info = [member_name, 'LR']
             participants.append(member_info)
             await ctx.send(f'{member_name}が参加しました。')
+
 
 # Botの起動とDiscordサーバーへの接続
 bot.run(token_id.TOKEN)
