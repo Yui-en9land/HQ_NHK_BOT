@@ -92,6 +92,15 @@ async def change(ctx, num, lr):
         await ctx.send('メンバーが参加していません。/join_memで登録してください')
 
 @bot.command()
+async def join(ctx, name):
+    for join_name in participants:
+        if name not in join_name:
+            # 登録時は左右どちらでも可として登録
+            member_info = [name, 'LR']
+            participants.append(member_info)
+
+
+@bot.command()
 async def leave(ctx, num):
     if participants:
         if len(participants) <= int(num):
