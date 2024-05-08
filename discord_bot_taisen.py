@@ -136,17 +136,25 @@ async def list_mem(ctx):
 
 @bot.command()
 async def hqstart(ctx):
-    global waiting_for_start
-    waiting_for_start = True
-    member = len(participants)
-    if member == 3:
-        match_mem.append('#' + participants[0] + " vs " + participants[1])
-        match_mem.append('#' + participants[0] + " vs " + participants[2])
-        match_mem.append('#' + participants[2] + " vs " + participants[1])
-        match_mem.append('#' + participants[1] + " vs " + participants[0])
-        match_mem.append('#' + participants[2] + " vs " + participants[0])
-        match_mem.append('#' + participants[1] + " vs " + participants[2])
-    await ctx.send("Enter キーを押すと参加者が表示されます。")
+    global named_table, match_num, total_num
+    match_num = 0
+    member_num = len(participants)
+    if member_num == 2:
+        named_table = table_make(match_table2, participants)
+    elif member_num == 3:
+        named_table = table_make(match_table2, participants)
+    elif member_num == 4:
+        named_table = table_make(match_table2, participants)
+    elif member_num == 5:
+        named_table = table_make(match_table2, participants)
+    else:
+        await ctx.send('メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
+        return
+    #対戦表作成後、最初の1試合はここで通知
+    await ctx.send('M' + str(total_num) + ': ' + named_table[match_num][0] + ' vs ' + named_table[match_num][1])
+    match_history.append(named_table[match_num])
+    match_num += 1
+    total_num += 1
 
 @bot.command()
 async def join_mem(ctx):
