@@ -9,13 +9,35 @@ intents.guilds = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 participants = []
-participantslr = []
 match_mem = []
 current_index = 0
 waiting_for_start = False
 
 TOKEN = ''
 CHAT_CHANNEL = ''
+
+named_table = []
+match_num = 0
+total_num = 1
+match_history = []
+
+match_table2 = [
+    [0, 1], [1, 0]
+]
+match_table3 = [
+    [0, 1], [2, 0], [1, 2],
+    [1, 0], [0, 2], [2, 1]
+]
+
+match_table4 = [
+    [0, 1], [2, 3], [2, 0], [3, 1], [0, 3], [1, 2],
+    [1, 0], [3, 2], [0, 2], [1, 3], [3, 0], [2, 1]
+]
+
+match_table5 = [
+    [0, 1], [2, 3], [4, 0], [1, 2], [3, 4], [0, 2], [1, 3], [2, 4], [0, 3], [1, 4],
+    [1, 0], [3, 2], [0, 4], [2, 1], [4, 3], [2, 0], [3, 1], [4, 2], [3, 0], [4, 1]
+]
 
 @bot.event
 async def on_ready():
