@@ -1,6 +1,8 @@
 import discord
+import datetime
 import asyncio
 import token_id
+import os
 from discord.ext import commands
 #from discord import app_commands
 from discord import Option
@@ -54,6 +56,14 @@ def table_make(match_table, participants):
             named_table.append([participants[match_ind[0]][0], participants[match_ind[1]][0]])
 
     return named_table
+
+
+def timefile(total_num, named_table, match_num):
+    d_today = datetime.date.today()
+    str_today = d_today.strftime('%Y%m%d')
+    # 対戦履歴を現在の日付でテキストに格納
+    with open(str_today + 'timestamps.txt', 'a') as file:
+        file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
 
 @bot.event
@@ -172,10 +182,7 @@ async def hqstart(ctx):
             'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
         return
     # 対戦表作成後、最初の1試合はここで通知
-    await ctx.respond('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
-    match_history.append(named_table[match_num])
-    match_num += 1
-    total_num += 1
+    await ctx.respond('対戦表を作成しました。')
 
 
 @bot.slash_command(description="次の試合のアナウンスをします", guild_ids=guild_id)
@@ -186,8 +193,9 @@ async def next(ctx):
     if match_num >= len(named_table):
         match_num = 0
     await ctx.respond('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
-    # 対戦履歴を格納
+    # 対戦履歴を格納(未使用)
     match_history.append(named_table[match_num])
+    timefile(total_num, named_table, match_num)
     match_num += 1
     total_num += 1
 
@@ -213,6 +221,16 @@ async def join_mem(ctx):
             member_info = [member_name, 'LR']
             participants.append(member_info)
             await ctx.respond(f'{member_name}が参加しました。')
+
+
+@bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
+async def write(ctx, yyyymmdd):
+    filename = yyyymmdd + 'timestamps.txt'
+    if os.path.isfile(filename):
+        await ctx.respond('ファイルを出力しました')
+        await bot.get_channel(token_id.CHANNEL_ID1).send(file=discord.File(filename))
+    else:
+        await ctx.respond('その日付のファイルは存在しません')
 
 
 # Botの起動とDiscordサーバーへの接続
