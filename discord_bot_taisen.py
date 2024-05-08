@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import token_id
 from discord.ext import commands
 
 intents = discord.Intents.all()
@@ -12,10 +13,6 @@ participants = []
 match_mem = []
 current_index = 0
 waiting_for_start = False
-
-TOKEN = ''
-CHAT_CHANNEL = ''
-
 named_table = []
 match_num = 0
 total_num = 1
@@ -56,18 +53,16 @@ def table_make(match_table, participants):
 async def on_ready():
     print('Bot is ready.')
 
-
-
 @bot.event
 async def on_voice_state_update(member, before, after):
 
     # チャンネルへの入室ステータスが変更されたとき（ミュートON、OFFに反応しないように分岐）
     if before.channel != after.channel:
         # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
-        botRoom = bot.get_channel(CHAT_CHANNEL)
+        botRoom = bot.get_channel(token_id.CHANNEL_ID1)
 
         # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
-        announceChannelIds = [CHAT_CHANNEL]
+        announceChannelIds = [token_id.CHANNEL_ID1]
 
         # 退室通知
         if before.channel is not None and before.channel.id in announceChannelIds:
@@ -79,8 +74,11 @@ async def on_voice_state_update(member, before, after):
         # 入室通知
         if after.channel is not None and after.channel.id in announceChannelIds:
             await botRoom.send('**' + after.channel.name + '** に、__' + member.display_name + '__  が参加しました！')
-            member_info = [member.display_name, 'LR']
-            participants.append(member_info)
+            for join_name in participants:
+                if member.display_name not in join_name:
+                    #登録時は左右どちらでも可として登録
+                    member_info = [member.display_name, 'LR']
+                    participants.append(member_info)
 
 @bot.command()
 async def change(ctx, num, lr):
@@ -127,7 +125,7 @@ async def leave(ctx, num):
 @bot.command()
 async def list_mem(ctx):
     if participants:
-        mem_list_mes = '参加者リスト:\n''
+        mem_list_mes = '参加者リスト:\n'
         for mem_index, mem_info in enumerate(participants):
             mem_list_mes += str(mem_index) + ":\t" + mem_info[0] + ":" + mem_info[1] + "\n"
         await ctx.send(mem_list_mes)
@@ -184,7 +182,7 @@ async def join_mem(ctx):
             #登録時は左右どちらでも可として登録
             member_info = [member_name, 'LR']
             participants.append(member_info)
-            await ctx.send(f'{member_name}が参加しました。')#    await bot.process_commands(message)
+            await ctx.send(f'{member_name}が参加しました。')
 
 # Botの起動とDiscordサーバーへの接続
-bot.run(TOKEN)
+bot.run(token_id.TOKEN)
