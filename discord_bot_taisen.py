@@ -47,8 +47,8 @@ def table_make(match_table, participants):
     named_table = []
     for match_ind in match_table:
         if (participants[match_ind[0]][1] == 'R') or (participants[match_ind[1]][1] == 'L'):
-            # 右固定または左固定がいる場合　左右を入れ替える
-            named_table.append([participants[match_ind[0]][0], participants[match_ind[1]][0]])
+            # 1P側に右固定または2P側に左固定がいる場合　左右を入れ替える
+            named_table.append([participants[match_ind[1]][0], participants[match_ind[0]][0]])
 
         else:
             named_table.append([participants[match_ind[0]][0], participants[match_ind[1]][0]])
