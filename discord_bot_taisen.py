@@ -99,20 +99,20 @@ async def change(ctx, num, lr):
         if len(participants) > num:
             if lr == 'L':
                 participants[num][1] = 'L'
-                await ctx.send(f'{participants[num][0]}が左固定になりました')
+                await ctx.respond(f'{participants[num][0]}が左固定になりました')
             elif lr == 'R':
                 participants[num][1] = 'R'
-                await ctx.send(f'{participants[num][0]}:が右固定になりました')
+                await ctx.respond(f'{participants[num][0]}:が右固定になりました')
             elif lr == 'LR':
                 participants[num][1] = 'LR'
-                await ctx.send(f'{participants[num][0]}:が固定解除されました')
+                await ctx.respond(f'{participants[num][0]}:が固定解除されました')
             else:
-                await ctx.send('L、R、LRのいずれかを大文字で入力してください')
+                await ctx.respond('L、R、LRのいずれかを大文字で入力してください')
         else:
-            await ctx.send('メンバーのインデックス番号と合いません。/list_memで確認してください')
+            await ctx.respond('メンバーのインデックス番号と合いません。/list_memで確認してください')
 
     else:
-        await ctx.send('メンバーが参加していません。/join_memで登録してください')
+        await ctx.respond('メンバーが参加していません。/join_memで登録してください')
 
 
 @bot.slash_command(description="手動で参加者を追加します", guild_ids=guild_id)
@@ -125,7 +125,7 @@ async def join(ctx, name):
         # 登録時は左右どちらでも可として登録
         member_info = [name, 'LR']
         participants.append(member_info)
-        await ctx.send(name + 'を追加しました')
+        await ctx.respond(name + 'を追加しました')
 
 
 @bot.slash_command(description="指定番号の参加者を削除します", guild_ids=guild_id)
@@ -133,12 +133,12 @@ async def leave(ctx, num):
     global participants
     if participants:
         if len(participants) <= int(num):
-            await ctx.send('メンバーのインデックス番号と合いません。/list_memで確認してください')
+            await ctx.respond('メンバーのインデックス番号と合いません。/list_memで確認してください')
         else:
-            await ctx.send(f'{participants[int(num)][0]} を削除しました。')
+            await ctx.respond(f'{participants[int(num)][0]} を削除しました。')
             del participants[int(num)]
     else:
-        await ctx.send('メンバーが参加していません。/join_memで登録してください')
+        await ctx.respond('メンバーが参加していません。/join_memで登録してください')
 
 
 @bot.slash_command(description="参加者と番号、左右固定有無を表示します", guild_ids=guild_id)
@@ -148,9 +148,9 @@ async def list_mem(ctx):
         mem_list_mes = '参加者リスト:\n'
         for mem_index, mem_info in enumerate(participants):
             mem_list_mes += str(mem_index) + ":\t" + mem_info[0] + ":" + mem_info[1] + "\n"
-        await ctx.send(mem_list_mes)
+        await ctx.respond(mem_list_mes)
     else:
-        await ctx.send('メンバーが参加していません。/join_memで登録してください')
+        await ctx.respond('メンバーが参加していません。/join_memで登録してください')
 
 
 @bot.slash_command(description="対戦表を作成し試合を開始します。人数が変わった場合も実行してください", guild_ids=guild_id)
@@ -168,11 +168,11 @@ async def hqstart(ctx):
     elif member_num == 5:
         named_table = table_make(match_table5, participants)
     else:
-        await ctx.send(
+        await ctx.respond(
             'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
         return
     # 対戦表作成後、最初の1試合はここで通知
-    await ctx.send('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
+    await ctx.respond('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     match_history.append(named_table[match_num])
     match_num += 1
     total_num += 1
@@ -185,7 +185,7 @@ async def next(ctx):
     # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
     if match_num >= len(named_table):
         match_num = 0
-    await ctx.send('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
+    await ctx.respond('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     # 対戦履歴を格納
     match_history.append(named_table[match_num])
     match_num += 1
@@ -205,14 +205,14 @@ async def join_mem(ctx):
                     # 登録時は左右どちらでも可として登録
                     member_info = [member_name, 'LR']
                     participants.append(member_info)
-                    await ctx.send(f'{member_name}が参加しました。')
+                    await ctx.respond(f'{member_name}が参加しました。')
     else:
         # メンバーが登録されてない場合は新規で全員追加
         for member_name in voicechat_members:
             # 登録時は左右どちらでも可として登録
             member_info = [member_name, 'LR']
             participants.append(member_info)
-            await ctx.send(f'{member_name}が参加しました。')
+            await ctx.respond(f'{member_name}が参加しました。')
 
 
 # Botの起動とDiscordサーバーへの接続
