@@ -157,6 +157,15 @@ async def hqstart(ctx):
     total_num += 1
 
 @bot.command()
+async def next(ctx):
+    global match_num, total_num, match_history
+    await ctx.send('M' + str(total_num) + ': ' + named_table[match_num][0] + ' vs ' + named_table[match_num][1])
+    match_history.append(named_table[match_num])
+    if named_table >= len(named_table):
+        match_num += 1
+    total_num += 1
+
+@bot.command()
 async def join_mem(ctx):
     # ボイスチャットに参加しているメンバーを取得
     voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
