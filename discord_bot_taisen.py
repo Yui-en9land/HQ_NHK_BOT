@@ -241,20 +241,40 @@ async def join_mem(ctx):
             await ctx.respond(f'{member_name}が参加しました。')
 
 
+@bot.slash_command(description="再戦(re)するか次の対戦をパス(pass)します", guild_ids=guild_id)
+async def match_ctrl(ctx, re_or_pass):
+    global match_num, total_num
+    if re_or_pass == 're':
+        match_num = max(match_num - 1, 1)
+        await ctx.respond('もう一度対戦します(/nextまたはnxを入力してください)')
+    elif re_or_pass == 'pass':
+        # ナンバリングを一つ戻してテキストファイルから最終行を削除する
+        total_num = max(total_num - 1, 1)
+        d_today = datetime.date.today()
+        str_today = d_today.strftime('%Y%m%d')
+        filename = str_today + 'timestamps.txt'
+        with open(filename, 'r+') as file:
+            filelist = file.readlines()
+            file.seek(0)
+            file.truncate()
+            del filelist[len(filelist) - 1]
+            file.writelines(filelist)
+        await ctx.respond('上記の対戦をパスしました')
+
 @bot.slash_command(description="対戦履歴をクリアします 全て:all １試合:1", guild_ids=guild_id)
-async def clear(ctx, allor1):
+async def clear(ctx, all_or_1):
     global match_num, total_num
     d_today = datetime.date.today()
     str_today = d_today.strftime('%Y%m%d')
     filename = str_today + 'timestamps.txt'
     if os.path.isfile(filename):
-        if allor1 == 'all':
+        if all_or_1 == 'all':
             # ナンバリングを0にしてテキストファイルを削除する
             total_num = 1
             match_num = 1
             os.remove(filename)
             await ctx.respond('全てのデータをクリアしました')
-        elif allor1 == '1':
+        elif all_or_1 == '1':
             # ナンバリングを一つ戻してテキストファイルから最終行を削除する
             total_num = max(total_num - 1, 1)
             with open(filename, 'r+') as file:
