@@ -250,14 +250,20 @@ async def clear(ctx, allor1):
     if os.path.isfile(filename):
         if allor1 == 'all':
             # ナンバリングを0にしてテキストファイルを削除する
-            total_num = 0
+            total_num = 1
+            match_num = 1
             os.remove(filename)
+            await ctx.respond('全てのデータをクリアしました')
         elif allor1 == '1':
             # ナンバリングを一つ戻してテキストファイルから最終行を削除する
-            total_num -= 1
-            with open(filename, 'w') as file:
+            total_num = max(total_num - 1, 1)
+            with open(filename, 'r+') as file:
                 filelist = file.readlines()
+                file.seek(0)
+                file.truncate()
                 del filelist[len(filelist)-1]
+                file.writelines(filelist)
+                await ctx.respond('1試合分のデータをクリアしました')
     else:
         await ctx.respond('本日の履歴は存在しません')
 
