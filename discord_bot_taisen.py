@@ -241,6 +241,27 @@ async def join_mem(ctx):
             await ctx.respond(f'{member_name}が参加しました。')
 
 
+@bot.slash_command(description="対戦履歴をクリアします 全て:all １試合:1", guild_ids=guild_id)
+async def clear(ctx, allor1):
+    global match_num, total_num
+    d_today = datetime.date.today()
+    str_today = d_today.strftime('%Y%m%d')
+    filename = str_today + 'timestamps.txt'
+    if os.path.isfile(filename):
+        if allor1 == 'all':
+            # ナンバリングを0にしてテキストファイルを削除する
+            total_num = 0
+            os.remove(filename)
+        elif allor1 == '1':
+            # ナンバリングを一つ戻してテキストファイルから最終行を削除する
+            total_num -= 1
+            with open(filename, 'w') as file:
+                filelist = file.readlines()
+                del filelist[len(filelist)-1]
+    else:
+        await ctx.respond('本日の履歴は存在しません')
+
+
 @bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
 async def write(ctx, yyyymmdd):
     filename = yyyymmdd + 'timestamps.txt'
