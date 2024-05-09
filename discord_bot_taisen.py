@@ -10,10 +10,11 @@ from discord import Option
 intents = discord.Intents.all()
 intents.reactions = True
 intents.guilds = True
+intents.message_content=True
 
-bot = discord.Bot()
+bot = discord.Bot(intents=intents)
 
-#bot = commands.Bot(command_prefix='/', intents=intents)
+client = commands.Bot(command_prefix='/', intents=intents)
 
 participants = []
 match_mem = []
@@ -192,13 +193,30 @@ async def next(ctx):
     # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
     if match_num >= len(named_table):
         match_num = 0
-    await ctx.respond('M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
+    await ctx.respond('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     # 対戦履歴を格納(未使用)
     match_history.append(named_table[match_num])
     timefile(total_num, named_table, match_num)
     match_num += 1
     total_num += 1
 
+
+@bot.event
+async def on_message(message):
+    global participants
+    global match_num, total_num, match_history
+    if message.author.bot:
+        return
+    if "nx" in message.content.lower():
+        # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
+        if match_num >= len(named_table):
+            match_num = 0
+        await message.channel.send('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
+        # 対戦履歴を格納(未使用)
+        match_history.append(named_table[match_num])
+        timefile(total_num, named_table, match_num)
+        match_num += 1
+        total_num += 1
 
 @bot.slash_command(description="ルームにいるメンバー全員を参加させます", guild_ids=guild_id)
 async def join_mem(ctx):
