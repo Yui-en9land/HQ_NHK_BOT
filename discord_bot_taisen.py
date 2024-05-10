@@ -290,7 +290,7 @@ async def clear(ctx, all_or_1):
 
 @bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
 async def write(ctx, yyyymmdd):
-    filename = yyyymmdd + 'timestamps.txt'
+    filename = yyyymmdd + 'result.txt'
     if os.path.isfile(filename):
         await ctx.respond('ファイルを出力しました')
         await bot.get_channel(token_id.CHANNEL_ID1).send(file=discord.File(filename))
