@@ -92,6 +92,30 @@ def inout_announce(channel_id, participants, member, before, after ):
             participants.append(member_info)
     return participants, send_str
 
+
+def change_member(participants, num, lr):
+    num = int(num)
+    if participants:
+        if len(participants) > num:
+            if lr == 'L':
+                participants[num][1] = 'L'
+                send_str = (f'{participants[num][0]}が左固定になりました')
+            elif lr == 'R':
+                participants[num][1] = 'R'
+                send_str = (f'{participants[num][0]}:が右固定になりました')
+            elif lr == 'LR':
+                participants[num][1] = 'LR'
+                send_str = (f'{participants[num][0]}:が固定解除されました')
+            else:
+                send_str = ('L、R、LRのいずれかを大文字で入力してください')
+        else:
+            send_str = ('メンバーのインデックス番号と合いません。/list_memで確認してください')
+
+    else:
+        send_str = ('メンバーが参加していません。/join_memで登録してください')
+    return participants,send_str
+
+
 @bot.event
 async def on_ready():
     print('Bot is ready.')
@@ -116,27 +140,13 @@ async def on_voice_state_update(member, before, after):
 
 @bot.slash_command(description="指定番号の参加者の左右の固定有無を設定します", guild_ids=guild_id)
 async def change(ctx, num, lr):
-    global participants
-    num = int(num)
-    if participants:
-        if len(participants) > num:
-            if lr == 'L':
-                participants[num][1] = 'L'
-                await ctx.respond(f'{participants[num][0]}が左固定になりました')
-            elif lr == 'R':
-                participants[num][1] = 'R'
-                await ctx.respond(f'{participants[num][0]}:が右固定になりました')
-            elif lr == 'LR':
-                participants[num][1] = 'LR'
-                await ctx.respond(f'{participants[num][0]}:が固定解除されました')
-            else:
-                await ctx.respond('L、R、LRのいずれかを大文字で入力してください')
-        else:
-            await ctx.respond('メンバーのインデックス番号と合いません。/list_memで確認してください')
-
-    else:
-        await ctx.respond('メンバーが参加していません。/join_memで登録してください')
-
+    global member_list1, member_list2
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        [member_list1, send_str] = change_member(member_list1, num, lr)
+        await ctx.respond(send_str)
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        [member_list2, send_str] = change_member(member_list2, num, lr)
+        await ctx.respond(send_str)
 
 @bot.slash_command(description="手動で参加者を追加します", guild_ids=guild_id)
 async def join(ctx, name):
