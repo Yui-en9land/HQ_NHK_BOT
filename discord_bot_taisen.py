@@ -173,15 +173,24 @@ async def join(ctx, name):
 
 @bot.slash_command(description="指定番号の参加者を削除します", guild_ids=guild_id)
 async def leave(ctx, num):
-    global participants
-    if participants:
-        if len(participants) <= int(num):
-            await ctx.respond('メンバーのインデックス番号と合いません。/list_memで確認してください')
+    global member_list1, member_list2
+    def leave_member(num,participants):
+        if participants:
+            if len(participants) <= int(num):
+                send_str = 'メンバーのインデックス番号と合いません。/list_memで確認してください'
+            else:
+                send_str = f'{participants[int(num)][0]} を削除しました。'
+                del participants[int(num)]
         else:
-            await ctx.respond(f'{participants[int(num)][0]} を削除しました。')
-            del participants[int(num)]
-    else:
-        await ctx.respond('メンバーが参加していません。/join_memで登録してください')
+            send_str = 'メンバーが参加していません。/join_memで登録してください'
+        return participants, send_str
+
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        [member_list1, send_str] = leave_member(num, member_list1)
+        await ctx.respond(send_str)
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        [member_list2, send_str] = leave_member(num, member_list2)
+        await ctx.respond(send_str)
 
 
 @bot.slash_command(description="参加者と番号、左右固定有無を表示します", guild_ids=guild_id)
