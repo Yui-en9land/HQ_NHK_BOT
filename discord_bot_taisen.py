@@ -23,10 +23,18 @@ waiting_for_start = False
 named_table = []
 match_num = 0
 total_num = 1
-match_history = []
 guild_id = token_id.guild_id
+
 member_list1 = []
 member_list2 = []
+match_num1 = 0
+match_num2 = 0
+total_num1 = 1
+total_num2 = 1
+named_table1 = []
+named_table2 = []
+match_history1 = []
+match_history2 = []
 
 match_table2 = [
     [0, 1], [1, 0]
@@ -216,39 +224,59 @@ async def list_mem(ctx):
 
 @bot.slash_command(description="対戦表を作成し試合を開始します。人数が変わった場合も実行してください", guild_ids=guild_id)
 async def hqstart(ctx):
-    global participants
-    global named_table, match_num, total_num
-    match_num = 0
-    member_num = len(participants)
-    if member_num == 2:
-        named_table = table_make(match_table2, participants)
-    elif member_num == 3:
-        named_table = table_make(match_table3, participants)
-    elif member_num == 4:
-        named_table = table_make(match_table4, participants)
-    elif member_num == 5:
-        named_table = table_make(match_table5, participants)
-    else:
-        await ctx.respond(
-            'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください')
-        return
-    # 対戦表作成後、最初の1試合はここで通知
-    await ctx.respond('対戦表を作成しました。')
+    global member_list1, member_list2
+    global named_table1, named_table2, match_num1, match_num2, total_num1, total_num2
+    def match_make(participants):
+        member_num = len(participants)
+        if member_num == 2:
+            named_table = table_make(match_table2, participants)
+        elif member_num == 3:
+            named_table = table_make(match_table3, participants)
+        elif member_num == 4:
+            named_table = table_make(match_table4, participants)
+        elif member_num == 5:
+            named_table = table_make(match_table5, participants)
+        else:
+            send_str = 'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください'
+            return [], send_str
+        send_str = '対戦表を作成しました。'
+        return named_table, send_str
+
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        match_num1 = 0
+        [named_table1, send_str] = match_make(member_list1)
+        await ctx.respond(send_str)
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        match_num2 = 0
+        [named_table2, send_str] = match_make(member_list2)
+        await ctx.respond(send_str)
 
 
 @bot.slash_command(description="次の試合のアナウンスをします", guild_ids=guild_id)
 async def next(ctx):
-    global participants
-    global match_num, total_num, match_history
-    # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
-    if match_num >= len(named_table):
-        match_num = 0
-    await ctx.respond('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
-    # 対戦履歴を格納(未使用)
-    match_history.append(named_table[match_num])
-    timefile(total_num, named_table, match_num)
-    match_num += 1
-    total_num += 1
+    global member_list1,match_num1, total_num1, match_history1
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
+        if match_num1 >= len(named_table1):
+            match_num1 = 0
+        await ctx.respond('# M{:02d}: {} vs {}'.format(total_num1, named_table1[match_num1][0], named_table1[match_num1][1]))
+        # 対戦履歴を格納(未使用)
+        match_history1.append(named_table1[match_num1])
+        timefile(total_num1, named_table1, match_num1)
+        match_num1 += 1
+        total_num1 += 1
+
+    global member_list2,match_num2, total_num2, match_history2
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
+        if match_num2 >= len(named_table2):
+            match_num2 = 0
+        await ctx.respond('# M{:02d}: {} vs {}'.format(total_num2, named_table2[match_num2][0], named_table2[match_num2][1]))
+        # 対戦履歴を格納(未使用)
+        match_history2.append(named_table2[match_num2])
+        timefile(total_num2, named_table2, match_num2)
+        match_num2 += 1
+        total_num2 += 1
 
 
 @bot.event
