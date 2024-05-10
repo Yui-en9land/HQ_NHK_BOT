@@ -116,6 +116,18 @@ def change_member(participants, num, lr):
     return participants,send_str
 
 
+def change_member(participants, name):
+    check_name = []
+    send_str = name + "は既にメンバーにいます"
+    for join_name in participants:
+        check_name.append(join_name[0])
+    if name not in check_name:
+        # 登録時は左右どちらでも可として登録
+        member_info = [name, 'LR']
+        participants.append(member_info)
+        send_str = name + 'を追加しました'
+    return participants, send_str
+
 @bot.event
 async def on_ready():
     print('Bot is ready.')
@@ -150,15 +162,13 @@ async def change(ctx, num, lr):
 
 @bot.slash_command(description="手動で参加者を追加します", guild_ids=guild_id)
 async def join(ctx, name):
-    global participants
-    check_name = []
-    for join_name in participants:
-        check_name.append(join_name[0])
-    if name not in check_name:
-        # 登録時は左右どちらでも可として登録
-        member_info = [name, 'LR']
-        participants.append(member_info)
-        await ctx.respond(name + 'を追加しました')
+    global member_list1,member_list2
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        [member_list1, send_str] = change_member(member_list1, name)
+        await ctx.respond(send_str)
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        [member_list2, send_str] = change_member(member_list2, name)
+        await ctx.respond(send_str)
 
 
 @bot.slash_command(description="指定番号の参加者を削除します", guild_ids=guild_id)
