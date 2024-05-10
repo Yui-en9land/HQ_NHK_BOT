@@ -64,7 +64,7 @@ def timefile(total_num, named_table, match_num):
     d_today = datetime.date.today()
     str_today = d_today.strftime('%Y%m%d')
     # 対戦履歴を現在の日付でテキストに格納
-    with open(str_today + 'timestamps.txt', 'a') as file:
+    with open(str_today + 'result.txt', 'a') as file:
         file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
 def inout_announce(channel_id, participants, member, before, after ):
@@ -284,7 +284,7 @@ async def match_ctrl(ctx, re_or_pass):
         total_num = max(total_num - 1, 1)
         d_today = datetime.date.today()
         str_today = d_today.strftime('%Y%m%d')
-        filename = str_today + 'timestamps.txt'
+        filename = str_today + 'result.txt'
         with open(filename, 'r+') as file:
             filelist = file.readlines()
             file.seek(0)
@@ -298,7 +298,7 @@ async def clear(ctx, all_or_1):
     global match_num, total_num
     d_today = datetime.date.today()
     str_today = d_today.strftime('%Y%m%d')
-    filename = str_today + 'timestamps.txt'
+    filename = str_today + 'result.txt'
     if os.path.isfile(filename):
         if all_or_1 == 'all':
             # ナンバリングを0にしてテキストファイルを削除する
