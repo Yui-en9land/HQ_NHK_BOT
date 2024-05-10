@@ -195,14 +195,23 @@ async def leave(ctx, num):
 
 @bot.slash_command(description="参加者と番号、左右固定有無を表示します", guild_ids=guild_id)
 async def list_mem(ctx):
-    global participants
-    if participants:
-        mem_list_mes = '参加者リスト:\n'
-        for mem_index, mem_info in enumerate(participants):
-            mem_list_mes += str(mem_index) + ":\t" + mem_info[0] + ":" + mem_info[1] + "\n"
-        await ctx.respond(mem_list_mes)
-    else:
-        await ctx.respond('メンバーが参加していません。/join_memで登録してください')
+    global member_list1, member_list2
+    def member_list(participants ):
+        if participants:
+            mem_list_mes = '参加者リスト:\n'
+            for mem_index, mem_info in enumerate(participants):
+                mem_list_mes += str(mem_index) + ":\t" + mem_info[0] + ":" + mem_info[1] + "\n"
+            send_str = mem_list_mes
+        else:
+            send_str = 'メンバーが参加していません。/join_memで登録してください'
+        return participants, send_str
+
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        [member_list1, send_str] = member_list(member_list1)
+        await ctx.respond(send_str)
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        [member_list2, send_str] = member_list(member_list2)
+        await ctx.respond(send_str)
 
 
 @bot.slash_command(description="対戦表を作成し試合を開始します。人数が変わった場合も実行してください", guild_ids=guild_id)
