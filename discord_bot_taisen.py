@@ -25,7 +25,8 @@ match_num = 0
 total_num = 1
 match_history = []
 guild_id = token_id.guild_id
-
+member_list1 = []
+member_list2 = []
 
 match_table2 = [
     [0, 1], [1, 0]
@@ -66,6 +67,30 @@ def timefile(total_num, named_table, match_num):
     with open(str_today + 'timestamps.txt', 'a') as file:
         file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
+def inout_announce(channel_id, participants, member, before, after ):
+    # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
+    announce_channel_id = [channel_id]
+    send_str = ''
+    # 退室通知
+    if before.channel is not None and before.channel.id in announce_channel_id:
+        send_str = '**' + before.channel.name + '** から、__' + member.display_name + '__  が抜けました！'
+        for name_index, member_name in enumerate(participants):
+            if member_name[0] == member.display_name:
+                del participants[name_index]
+
+    # 入室通知
+    if after.channel is not None and after.channel.id in announce_channel_id:
+        send_str = '**' + after.channel.name + '** に、__' + member.display_name + '__  が参加しました！'
+        check_name = []
+        for join_name in participants:
+            # リストからメンバー名だけを取り出す
+            check_name.append(join_name[0])
+        # メンバーリストに参加者名が無い場合はメンバーリストに追加
+        if member.display_name not in check_name:
+            # 登録時は左右どちらでも可として登録
+            member_info = [member.display_name, 'LR']
+            participants.append(member_info)
+    return participants, send_str
 
 @bot.event
 async def on_ready():
@@ -74,32 +99,19 @@ async def on_ready():
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    global participants
+    global member_list1, member_list2
     # チャンネルへの入室ステータスが変更されたとき（ミュートON、OFFに反応しないように分岐）
     if before.channel != after.channel:
         # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
-        botRoom = bot.get_channel(token_id.CHANNEL_ID1)
+        botroom = bot.get_channel(token_id.CHANNEL_ID1)
+        [member_list1, send_str] = inout_announce(token_id.CHANNEL_ID1, member_list1, member, before, after)
+        if send_str:
+            await botroom.send(send_str)
 
-        # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
-        announceChannelIds = [token_id.CHANNEL_ID1]
-
-        # 退室通知
-        if before.channel is not None and before.channel.id in announceChannelIds:
-            await botRoom.send('**' + before.channel.name + '** から、__' + member.display_name + '__  が抜けました！')
-            for name_index, member_name in enumerate(participants):
-                if member_name[0] == member.display_name:
-                    del participants[name_index]
-
-        # 入室通知
-        if after.channel is not None and after.channel.id in announceChannelIds:
-            await botRoom.send('**' + after.channel.name + '** に、__' + member.display_name + '__  が参加しました！')
-            check_name = []
-            for join_name in participants:
-                check_name.append(join_name[0])
-            if member.display_name not in check_name:
-                # 登録時は左右どちらでも可として登録
-                member_info = [member.display_name, 'LR']
-                participants.append(member_info)
+        botroom = bot.get_channel(token_id.CHANNEL_ID2)
+        [member_list2, send_str] = inout_announce(token_id.CHANNEL_ID2, member_list2, member, before, after)
+        if send_str:
+            await botroom.send(send_str)
 
 
 @bot.slash_command(description="指定番号の参加者の左右の固定有無を設定します", guild_ids=guild_id)
