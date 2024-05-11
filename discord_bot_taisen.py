@@ -281,21 +281,31 @@ async def next(ctx):
 
 @bot.event
 async def on_message(message):
-    global participants
-    global match_num, total_num, match_history
+    global member_list1, match_num1, total_num1, match_history1
+    global member_list2, match_num2, total_num2, match_history2
     if message.author.bot:
         return
     if "nx" in message.content.lower():
-        # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
-        if match_num >= len(named_table):
-            match_num = 0
-        await message.channel.send('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
-        # 対戦履歴を格納(未使用)
-        match_history.append(named_table[match_num])
-        timefile(total_num, named_table, match_num)
-        match_num += 1
-        total_num += 1
-
+        if message.channnel.id == token_id.CHANNEL_ID1:
+            # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
+            if match_num1 >= len(named_table1):
+                match_num1 = 0
+            await message.channel.send('# M{:02d}: {} vs {}'.format(total_num1, named_table1[match_num1][0], named_table1[match_num1][1]))
+            # 対戦履歴を格納(未使用)
+            match_history1.append(named_table1[match_num2])
+            timefile(total_num1, named_table1, match_num2)
+            match_num1 += 1
+            total_num1 += 1
+        if message.channnel.id == token_id.CHANNEL_ID2:
+            # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
+            if match_num2 >= len(named_table2):
+                match_num2 = 0
+            await message.channel.send('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
+            # 対戦履歴を格納(未使用)
+            match_history2.append(named_table2[match_num2])
+            timefile(total_num2, named_table2, match_num2)
+            match_num2 += 1
+            total_num2 += 1
 @bot.slash_command(description="ルームにいるメンバー全員を参加させます", guild_ids=guild_id)
 async def join_mem(ctx):
     global participants
