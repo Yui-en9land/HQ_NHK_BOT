@@ -263,6 +263,8 @@ def next_match(match_num, total_num, named_table, match_history, channel_num):
     # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
     if match_num >= len(named_table):
         match_num = 0
+    if match_num < 0:
+        match_num = len(named_table) - 1
     send_str = ('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     # 対戦履歴を格納(未使用)
     match_history.append(named_table[match_num])
@@ -341,14 +343,14 @@ async def join_mem(ctx):
     global member_list1
     if ctx.channel_id == token_id.CHANNEL_ID1:
         # ボイスチャットに参加しているメンバーを取得
-        voicechat_members1 = [i.display_name for i in ctx.author.voice.channel.members]
+        voicechat_members1 = [i.display_name for i in ctx.channel.members]
         [member_list1, send_str] = member_join(member_list1, voicechat_members1)
         await ctx.respond(send_str)
 
     global member_list2
     if ctx.channel_id == token_id.CHANNEL_ID2:
         # ボイスチャットに参加しているメンバーを取得
-        voicechat_members2 = [i.display_name for i in ctx.author.voice.channel.members]
+        voicechat_members2 = [i.display_name for i in ctx.channel.members]
         [member_list2, send_str] = member_join(member_list2, voicechat_members2)
         await ctx.respond(send_str)
 
@@ -358,7 +360,7 @@ async def match_ctrl(ctx, re_or_pass):
     global match_num, total_num
     def match_control(re_or_pass, match_num, total_num, channel_num):
         if re_or_pass == 're':
-            match_num = max(match_num - 1, 1)
+            match_num = match_num - 1
             send_str = ('もう一度対戦します(/nextまたはnxを入力してください)')
         elif re_or_pass == 'pass':
             # ナンバリングを一つ戻してテキストファイルから最終行を削除する
@@ -382,7 +384,7 @@ async def match_ctrl(ctx, re_or_pass):
         await ctx.respond(send_str)
     global match_num2, total_num2
     if ctx.channel_id == token_id.CHANNEL_ID2:
-        [match_num2, total_num2, send_str] = match_control(re_or_pass, match_num2, total_num2, 1)
+        [match_num2, total_num2, send_str] = match_control(re_or_pass, match_num2, total_num2, 2)
         await ctx.respond(send_str)
 
 @bot.slash_command(description="対戦履歴をクリアします 全て:all １試合:1", guild_ids=guild_id)
