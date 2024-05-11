@@ -68,11 +68,11 @@ def table_make(match_table, participants):
     return named_table
 
 
-def timefile(total_num, named_table, match_num, ):
+def timefile(total_num, named_table, match_num, channel_num):
     d_today = datetime.date.today()
     str_today = d_today.strftime('%Y%m%d')
     # 対戦履歴を現在の日付でテキストに格納
-    with open(str_today + 'result.txt', 'a') as file:
+    with open(str_today + '_' + str(channel_num) + '_' + 'result.txt', 'a') as file:
         file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
 
@@ -259,14 +259,14 @@ async def hqstart(ctx):
         await ctx.respond(send_str)
 
 
-def next_match(match_num, total_num, named_table, match_history):
+def next_match(match_num, total_num, named_table, match_history, channel_num):
     # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
     if match_num >= len(named_table):
         match_num = 0
     send_str = ('# M{:02d}: {} vs {}'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
     # 対戦履歴を格納(未使用)
     match_history.append(named_table[match_num])
-    timefile(total_num, named_table, match_num)
+    timefile(total_num, named_table, match_num, channel_num)
     match_num += 1
     total_num += 1
     return match_num, total_num, named_table, match_history, send_str
@@ -277,13 +277,13 @@ async def next(ctx):
     global member_list1, match_num1, total_num1, match_history1, named_table1
     if ctx.channel_id == token_id.CHANNEL_ID1:
         [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(match_num1, total_num1,
-                                                                                      named_table1, match_history1)
+                                                                                      named_table1, match_history1, 1)
         await ctx.respond(send_str)
 
     global member_list2, match_num2, total_num2, match_history2, named_table2
     if ctx.channel_id == token_id.CHANNEL_ID2:
         [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2,
-                                                                                      named_table2, match_history2)
+                                                                                      named_table2, match_history2, 2)
         await ctx.respond(send_str)
 
 
@@ -297,13 +297,13 @@ async def on_message(message):
         global member_list1, match_num1, total_num1, match_history1, named_table1
         if message.channel.id == token_id.CHANNEL_ID1:
             [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(match_num1, total_num1,
-                                                                                          named_table1, match_history1)
+                                                                                          named_table1, match_history1, 1)
             await message.channel.send(send_str)
 
         global member_list2, match_num2, total_num2, match_history2, named_table2
         if message.channel.id == token_id.CHANNEL_ID1:
             [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2,
-                                                                                          named_table2, match_history2)
+                                                                                          named_table2, match_history2, 2)
             await message.channel.send(send_str)
 
 
@@ -413,13 +413,21 @@ async def clear(ctx, all_or_1):
 
 @bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
 async def write(ctx, yyyymmdd):
-    filename = yyyymmdd + 'result.txt'
-    if os.path.isfile(filename):
-        await ctx.respond('ファイルを出力しました')
-        await bot.get_channel(token_id.CHANNEL_ID1).send(file=discord.File(filename))
-    else:
-        await ctx.respond('その日付のファイルは存在しません')
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        filename = yyyymmdd + '_' + str(1) + '_' + 'result.txt'
+        if os.path.isfile(filename):
+            await ctx.respond('ファイルを出力しました')
+            await bot.get_channel(token_id.CHANNEL_ID1).send(file=discord.File(filename))
+        else:
+             await ctx.respond('その日付のファイルは存在しません')
 
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        filename = yyyymmdd + '_' + str(2) + '_' + 'result.txt'
+        if os.path.isfile(filename):
+            await ctx.respond('ファイルを出力しました')
+            await bot.get_channel(token_id.CHANNEL_ID2).send(file=discord.File(filename))
+        else:
+             await ctx.respond('その日付のファイルは存在しません')
 
 # Botの起動とDiscordサーバーへの接続
 bot.run(token_id.TOKEN)
