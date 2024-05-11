@@ -301,7 +301,7 @@ async def on_message(message):
             await message.channel.send(send_str)
 
         global member_list2, match_num2, total_num2, match_history2, named_table2
-        if message.channel.id == token_id.CHANNEL_ID1:
+        if message.channel.id == token_id.CHANNEL_ID2:
             [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2,
                                                                                           named_table2, match_history2, 2)
             await message.channel.send(send_str)
@@ -376,12 +376,13 @@ async def match_ctrl(ctx, re_or_pass):
         else:
             send_str = ('reまたはpassを入力してください')
         return match_num, total_num, send_str
-
+    global match_num1, total_num1
     if ctx.channel_id == token_id.CHANNEL_ID1:
-        [match_num, total_num, send_str] = match_control(re_or_pass, match_num1, total_num1, 1)
+        [match_num1, total_num1, send_str] = match_control(re_or_pass, match_num1, total_num1, 1)
         await ctx.respond(send_str)
+    global match_num2, total_num2
     if ctx.channel_id == token_id.CHANNEL_ID2:
-        [match_num, total_num, send_str] = match_control(re_or_pass, match_num2, total_num2, 1)
+        [match_num2, total_num2, send_str] = match_control(re_or_pass, match_num2, total_num2, 1)
         await ctx.respond(send_str)
 
 @bot.slash_command(description="対戦履歴をクリアします 全て:all １試合:1", guild_ids=guild_id)
