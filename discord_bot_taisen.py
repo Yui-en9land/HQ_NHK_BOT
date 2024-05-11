@@ -390,29 +390,40 @@ async def match_ctrl(ctx, re_or_pass):
 @bot.slash_command(description="対戦履歴をクリアします 全て:all １試合:1", guild_ids=guild_id)
 async def clear(ctx, all_or_1):
     global match_num, total_num
-    d_today = datetime.date.today()
-    str_today = d_today.strftime('%Y%m%d')
-    filename = str_today + 'result.txt'
-    if os.path.isfile(filename):
-        if all_or_1 == 'all':
-            # ナンバリングを0にしてテキストファイルを削除する
-            total_num = 1
-            match_num = 1
-            os.remove(filename)
-            await ctx.respond('全てのデータをクリアしました')
-        elif all_or_1 == '1':
-            # ナンバリングを一つ戻してテキストファイルから最終行を削除する
-            total_num = max(total_num - 1, 1)
-            with open(filename, 'r+') as file:
-                filelist = file.readlines()
-                file.seek(0)
-                file.truncate()
-                del filelist[len(filelist) - 1]
-                file.writelines(filelist)
-                await ctx.respond('1試合分のデータをクリアしました')
-    else:
-        await ctx.respond('本日の履歴は存在しません')
 
+    def clear_match(channel_num, total_num):
+        d_today = datetime.date.today()
+        str_today = d_today.strftime('%Y%m%d')
+        filename = str_today + '_' + str(channel_num) + '_' + 'result.txt'
+        if os.path.isfile(filename):
+            if all_or_1 == 'all':
+                # ナンバリングを0にしてテキストファイルを削除する
+                total_num = 1
+                match_num = 1
+                os.remove(filename)
+                send_str = ('全てのデータをクリアしました')
+            elif all_or_1 == '1':
+                # ナンバリングを一つ戻してテキストファイルから最終行を削除する
+                total_num = max(total_num - 1, 1)
+                with open(filename, 'r+') as file:
+                    filelist = file.readlines()
+                    file.seek(0)
+                    file.truncate()
+                    del filelist[len(filelist) - 1]
+                    file.writelines(filelist)
+                    await ctx.respond('1試合分のデータをクリアしました')
+        else:
+            send_str = ('本日の履歴は存在しません')
+        return total_num, match_num, send_str
+
+    global match_num1, total_num1
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        [match_num1, total_num1, send_str] = clear_match(1, total_num)
+        await ctx.respond(send_str)
+    global match_num2, total_num2
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        [match_num2, total_num2, send_str] = clear_match(2, total_num)
+        await ctx.respond(send_str)
 
 @bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
 async def write(ctx, yyyymmdd):
