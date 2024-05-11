@@ -4,13 +4,13 @@ import asyncio
 import token_id
 import os
 from discord.ext import commands
-#from discord import app_commands
+# from discord import app_commands
 from discord import Option
 
 intents = discord.Intents.all()
 intents.reactions = True
 intents.guilds = True
-intents.message_content=True
+intents.message_content = True
 
 bot = discord.Bot(intents=intents)
 
@@ -68,14 +68,15 @@ def table_make(match_table, participants):
     return named_table
 
 
-def timefile(total_num, named_table, match_num):
+def timefile(total_num, named_table, match_num, ):
     d_today = datetime.date.today()
     str_today = d_today.strftime('%Y%m%d')
     # 対戦履歴を現在の日付でテキストに格納
     with open(str_today + 'result.txt', 'a') as file:
         file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
-def inout_announce(channel_id, participants, member, before, after ):
+
+def inout_announce(channel_id, participants, member, before, after):
     # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
     announce_channel_id = [channel_id]
     send_str = ''
@@ -121,7 +122,7 @@ def change_member(participants, num, lr):
 
     else:
         send_str = ('メンバーが参加していません。/join_memで登録してください')
-    return participants,send_str
+    return participants, send_str
 
 
 def change_member(participants, name):
@@ -135,6 +136,7 @@ def change_member(participants, name):
         participants.append(member_info)
         send_str = name + 'を追加しました'
     return participants, send_str
+
 
 @bot.event
 async def on_ready():
@@ -168,9 +170,10 @@ async def change(ctx, num, lr):
         [member_list2, send_str] = change_member(member_list2, num, lr)
         await ctx.respond(send_str)
 
+
 @bot.slash_command(description="手動で参加者を追加します", guild_ids=guild_id)
 async def join(ctx, name):
-    global member_list1,member_list2
+    global member_list1, member_list2
     if ctx.channel_id == token_id.CHANNEL_ID1:
         [member_list1, send_str] = change_member(member_list1, name)
         await ctx.respond(send_str)
@@ -182,7 +185,8 @@ async def join(ctx, name):
 @bot.slash_command(description="指定番号の参加者を削除します", guild_ids=guild_id)
 async def leave(ctx, num):
     global member_list1, member_list2
-    def leave_member(num,participants):
+
+    def leave_member(num, participants):
         if participants:
             if len(participants) <= int(num):
                 send_str = 'メンバーのインデックス番号と合いません。/list_memで確認してください'
@@ -204,7 +208,8 @@ async def leave(ctx, num):
 @bot.slash_command(description="参加者と番号、左右固定有無を表示します", guild_ids=guild_id)
 async def list_mem(ctx):
     global member_list1, member_list2
-    def member_list(participants ):
+
+    def member_list(participants):
         if participants:
             mem_list_mes = '参加者リスト:\n'
             for mem_index, mem_info in enumerate(participants):
@@ -222,10 +227,12 @@ async def list_mem(ctx):
         await ctx.respond(send_str)
 
 
-@bot.slash_command(description="対戦表を作成し試合を開始します。人数が変わった場合も実行してください", guild_ids=guild_id)
+@bot.slash_command(description="対戦表を作成し試合を開始します。人数が変わった場合も実行してください",
+                   guild_ids=guild_id)
 async def hqstart(ctx):
     global member_list1, member_list2
     global named_table1, named_table2, match_num1, match_num2, total_num1, total_num2
+
     def match_make(participants):
         member_num = len(participants)
         if member_num == 2:
@@ -251,6 +258,7 @@ async def hqstart(ctx):
         [named_table2, send_str] = match_make(member_list2)
         await ctx.respond(send_str)
 
+
 def next_match(match_num, total_num, named_table, match_history):
     # 全試合数をオーバーしていないか判定　超えた場合は最初(0)に戻る
     if match_num >= len(named_table):
@@ -268,12 +276,14 @@ def next_match(match_num, total_num, named_table, match_history):
 async def next(ctx):
     global member_list1, match_num1, total_num1, match_history1, named_table1
     if ctx.channel_id == token_id.CHANNEL_ID1:
-        [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(match_num1, total_num1, named_table1, match_history1)
+        [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(match_num1, total_num1,
+                                                                                      named_table1, match_history1)
         await ctx.respond(send_str)
 
     global member_list2, match_num2, total_num2, match_history2, named_table2
     if ctx.channel_id == token_id.CHANNEL_ID2:
-        [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2, named_table2, match_history2)
+        [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2,
+                                                                                      named_table2, match_history2)
         await ctx.respond(send_str)
 
 
@@ -285,57 +295,94 @@ async def on_message(message):
         return
     if "nx" in message.content.lower():
         global member_list1, match_num1, total_num1, match_history1, named_table1
-        if message.channnel.id == token_id.CHANNEL_ID1:
-            [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(match_num1, total_num1, named_table1, match_history1)
+        if message.channel.id == token_id.CHANNEL_ID1:
+            [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(match_num1, total_num1,
+                                                                                          named_table1, match_history1)
             await message.channel.send(send_str)
 
         global member_list2, match_num2, total_num2, match_history2, named_table2
-        if message.channnel.id == token_id.CHANNEL_ID1:
-            [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2, named_table2, match_history2)
+        if message.channel.id == token_id.CHANNEL_ID1:
+            [match_num2, total_num2, named_table2, match_history2, send_str] = next_match(match_num2, total_num2,
+                                                                                          named_table2, match_history2)
             await message.channel.send(send_str)
+
 
 @bot.slash_command(description="ルームにいるメンバー全員を参加させます", guild_ids=guild_id)
 async def join_mem(ctx):
-    global participants
-    # ボイスチャットに参加しているメンバーを取得
-    voicechat_members = [i.display_name for i in ctx.author.voice.channel.members]
-    if participants:
-        # 既にメンバーが登録されている場合は足りない人のみ追加
-        for member_name in voicechat_members:
-            for join_name in participants:
-                if member_name not in join_name:
+
+    def member_join(participants, voicechat_members):
+        join_members = []
+        joins = ''
+        send_str = '既に全員登録されています'
+        if participants:
+            # 既にメンバーが登録されている場合は足りない人のみ追加
+            for member_name in voicechat_members:
+                for join_name in participants:
+                    join_members.append(join_name[0])
+                if member_name not in join_members:
                     # 登録時は左右どちらでも可として登録
                     member_info = [member_name, 'LR']
                     participants.append(member_info)
-                    await ctx.respond(f'{member_name}が参加しました。')
-    else:
-        # メンバーが登録されてない場合は新規で全員追加
-        for member_name in voicechat_members:
-            # 登録時は左右どちらでも可として登録
-            member_info = [member_name, 'LR']
-            participants.append(member_info)
-            await ctx.respond(f'{member_name}が参加しました。')
+                    joins = member_name + ',' + joins
+                    send_str = (f'{joins}が参加しました。')
+        else:
+            if voicechat_members:
+                # メンバーが登録されてない場合は新規で全員追加
+                for member_name in voicechat_members:
+                    # 登録時は左右どちらでも可として登録
+                    member_info = [member_name, 'LR']
+                    participants.append(member_info)
+                    joins = member_name + ',' + joins
+                send_str = (f'{joins}が参加しました。')
+            else:
+                send_str = 'ルームにメンバーがいません'
+        return participants, send_str
+
+    global member_list1
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        # ボイスチャットに参加しているメンバーを取得
+        voicechat_members1 = [i.display_name for i in ctx.author.voice.channel.members]
+        [member_list1, send_str] = member_join(member_list1, voicechat_members1)
+        await ctx.respond(send_str)
+
+    global member_list2
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        # ボイスチャットに参加しているメンバーを取得
+        voicechat_members2 = [i.display_name for i in ctx.author.voice.channel.members]
+        [member_list2, send_str] = member_join(member_list2, voicechat_members2)
+        await ctx.respond(send_str)
 
 
 @bot.slash_command(description="再戦(re)するか次の対戦をパス(pass)します", guild_ids=guild_id)
 async def match_ctrl(ctx, re_or_pass):
     global match_num, total_num
-    if re_or_pass == 're':
-        match_num = max(match_num - 1, 1)
-        await ctx.respond('もう一度対戦します(/nextまたはnxを入力してください)')
-    elif re_or_pass == 'pass':
-        # ナンバリングを一つ戻してテキストファイルから最終行を削除する
-        total_num = max(total_num - 1, 1)
-        d_today = datetime.date.today()
-        str_today = d_today.strftime('%Y%m%d')
-        filename = str_today + 'result.txt'
-        with open(filename, 'r+') as file:
-            filelist = file.readlines()
-            file.seek(0)
-            file.truncate()
-            del filelist[len(filelist) - 1]
-            file.writelines(filelist)
-        await ctx.respond('上記の対戦をパスしました')
+    def match_control(re_or_pass, match_num, total_num, channel_num):
+        if re_or_pass == 're':
+            match_num = max(match_num - 1, 1)
+            send_str = ('もう一度対戦します(/nextまたはnxを入力してください)')
+        elif re_or_pass == 'pass':
+            # ナンバリングを一つ戻してテキストファイルから最終行を削除する
+            total_num = max(total_num - 1, 1)
+            d_today = datetime.date.today()
+            str_today = d_today.strftime('%Y%m%d')
+            filename = str_today + '_' + str(channel_num) + '_' + 'result.txt'
+            with open(filename, 'r+') as file:
+                filelist = file.readlines()
+                file.seek(0)
+                file.truncate()
+                del filelist[len(filelist) - 1]
+                file.writelines(filelist)
+            send_str = ('上記の対戦をパスしました')
+        else:
+            send_str = ('reまたはpassを入力してください')
+        return match_num, total_num, send_str
+
+    if ctx.channel_id == token_id.CHANNEL_ID1:
+        [match_num, total_num, send_str] = match_control(re_or_pass, match_num1, total_num1, 1)
+        await ctx.respond(send_str)
+    if ctx.channel_id == token_id.CHANNEL_ID2:
+        [match_num, total_num, send_str] = match_control(re_or_pass, match_num2, total_num2, 1)
+        await ctx.respond(send_str)
 
 @bot.slash_command(description="対戦履歴をクリアします 全て:all １試合:1", guild_ids=guild_id)
 async def clear(ctx, all_or_1):
@@ -357,7 +404,7 @@ async def clear(ctx, all_or_1):
                 filelist = file.readlines()
                 file.seek(0)
                 file.truncate()
-                del filelist[len(filelist)-1]
+                del filelist[len(filelist) - 1]
                 file.writelines(filelist)
                 await ctx.respond('1試合分のデータをクリアしました')
     else:
