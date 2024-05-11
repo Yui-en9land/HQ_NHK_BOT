@@ -16,13 +16,6 @@ bot = discord.Bot(intents=intents)
 
 client = commands.Bot(command_prefix='/', intents=intents)
 
-participants = []
-match_mem = []
-current_index = 0
-waiting_for_start = False
-named_table = []
-match_num = 0
-total_num = 1
 guild_id = token_id.guild_id
 
 member_list1 = []
@@ -391,7 +384,7 @@ async def match_ctrl(ctx, re_or_pass):
 async def clear(ctx, all_or_1):
     global match_num, total_num
 
-    def clear_match(channel_num, total_num):
+    def clear_match(channel_num, total_num, match_num):
         d_today = datetime.date.today()
         str_today = d_today.strftime('%Y%m%d')
         filename = str_today + '_' + str(channel_num) + '_' + 'result.txt'
@@ -411,18 +404,18 @@ async def clear(ctx, all_or_1):
                     file.truncate()
                     del filelist[len(filelist) - 1]
                     file.writelines(filelist)
-                    await ctx.respond('1試合分のデータをクリアしました')
+                    send_str = ('1試合分のデータをクリアしました')
         else:
             send_str = ('本日の履歴は存在しません')
         return total_num, match_num, send_str
 
     global match_num1, total_num1
     if ctx.channel_id == token_id.CHANNEL_ID1:
-        [match_num1, total_num1, send_str] = clear_match(1, total_num)
+        [total_num1, match_num1, send_str] = clear_match(1, total_num1, match_num1)
         await ctx.respond(send_str)
     global match_num2, total_num2
     if ctx.channel_id == token_id.CHANNEL_ID2:
-        [match_num2, total_num2, send_str] = clear_match(2, total_num)
+        [total_num2, match_num2, send_str] = clear_match(2, total_num2, match_num2)
         await ctx.respond(send_str)
 
 @bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
