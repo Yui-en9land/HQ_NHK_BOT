@@ -68,7 +68,7 @@ def timefile(total_num, named_table, match_num, channel_num):
     with open(str_today + '_' + str(channel_num) + '_' + 'result.txt', 'a') as file:
         file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
-
+        
 def inout_announce(channel_id, participants, member, before, after):
     # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
     announce_channel_id = [channel_id]
@@ -371,6 +371,8 @@ async def match_ctrl(ctx, re_or_pass):
         else:
             send_str = ('reまたはpassを入力してください')
         return match_num, total_num, send_str
+      
+      
     global match_num1, total_num1
     if ctx.channel_id == token_id.CHANNEL_ID1:
         [match_num1, total_num1, send_str] = match_control(re_or_pass, match_num1, total_num1, 1)
