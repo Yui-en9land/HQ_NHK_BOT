@@ -4,13 +4,8 @@ import asyncio
 import token_id
 import os
 from discord.ext import commands
-# from discord import app_commands
-from discord import Option
 
 intents = discord.Intents.all()
-intents.reactions = True
-intents.guilds = True
-intents.message_content = True
 
 bot = discord.Bot(intents=intents)
 
@@ -118,7 +113,7 @@ def change_member(participants, num, lr):
     return participants, send_str
 
 
-def change_member(participants, name):
+def join_member(participants, name):
     check_name = []
     send_str = name + "は既にメンバーにいます"
     for join_name in participants:
@@ -168,10 +163,10 @@ async def change(ctx, num, lr):
 async def join(ctx, name):
     global member_list1, member_list2
     if ctx.channel_id == token_id.CHANNEL_ID1:
-        [member_list1, send_str] = change_member(member_list1, name)
+        [member_list1, send_str] = join_member(member_list1, name)
         await ctx.respond(send_str)
     if ctx.channel_id == token_id.CHANNEL_ID2:
-        [member_list2, send_str] = change_member(member_list2, name)
+        [member_list2, send_str] = join_member(member_list2, name)
         await ctx.respond(send_str)
 
 
