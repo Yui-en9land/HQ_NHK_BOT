@@ -163,17 +163,11 @@ async def on_voice_state_update(member, before, after):
     # チャンネルへの入室ステータスが変更されたとき（ミュートON、OFFに反応しないように分岐）
     if before.channel != after.channel:
         # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
-        # チャンネル１はテスト用の部屋のIDも記載しているためtoken_id内にafterチャンネルがある場合のみ出力する
-        if after.channel is not None and after.channel.id in token_id.CHANNEL_ID1:
-            botroom = bot.get_channel(after.channel.id)
-            [member_list1, send_str] = inout_announce(after.channel.id, member_list1, member, before, after)
-            if send_str:
-                await botroom.send(send_str)
-        elif before.channel is not None and before.channel.id in token_id.CHANNEL_ID1:
-            botroom = bot.get_channel(before.channel.id)
-            [member_list1, send_str] = inout_announce(before.channel.id, member_list1, member, before, after)
-            if send_str:
-                await botroom.send(send_str)
+
+        botroom = bot.get_channel(before.channel.id)
+        [member_list1, send_str] = inout_announce(before.channel.id, member_list1, member, before, after)
+        if send_str:
+            await botroom.send(send_str)
 
         botroom = bot.get_channel(token_id.CHANNEL_ID2)
         [member_list2, send_str] = inout_announce(token_id.CHANNEL_ID2, member_list2, member, before, after)
@@ -184,7 +178,7 @@ async def on_voice_state_update(member, before, after):
 @bot.slash_command(description="指定番号の参加者の左右の固定有無を設定します", guild_ids=guild_id)
 async def change(ctx, num, lr):
     global member_list1, member_list2
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [member_list1, send_str] = change_member(member_list1, num, lr)
         await ctx.respond(send_str)
     if ctx.channel_id == token_id.CHANNEL_ID2:
@@ -195,7 +189,7 @@ async def change(ctx, num, lr):
 @bot.slash_command(description="手動で参加者を追加します", guild_ids=guild_id)
 async def join(ctx, name):
     global member_list1, member_list2
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [member_list1, send_str] = join_member(member_list1, name)
         await ctx.respond(send_str)
     if ctx.channel_id == token_id.CHANNEL_ID2:
@@ -218,7 +212,7 @@ async def leave(ctx, num):
             send_str = 'メンバーが参加していません。/join_memで登録してください'
         return participants, send_str
 
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [member_list1, send_str] = leave_member(num, member_list1)
         await ctx.respond(send_str)
     if ctx.channel_id == token_id.CHANNEL_ID2:
@@ -240,7 +234,7 @@ async def list_mem(ctx):
             send_str = 'メンバーが参加していません。/join_memで登録してください'
         return participants, send_str
 
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [member_list1, send_str] = member_list(member_list1)
         await ctx.respond(send_str)
     if ctx.channel_id == token_id.CHANNEL_ID2:
@@ -270,7 +264,7 @@ async def hqstart(ctx):
         send_str = '対戦表を作成しました。'
         return named_table, send_str
 
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         match_num1 = 0
         [named_table1, send_str] = match_make(member_list1)
         await ctx.respond(send_str)
@@ -301,7 +295,7 @@ def next_match(ctx, match_num, total_num, named_table, match_history, channel_nu
 @bot.slash_command(description="次の試合のアナウンスをします", guild_ids=guild_id)
 async def next(ctx):
     global member_list1, match_num1, total_num1, match_history1, named_table1
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(ctx, match_num1, total_num1,
                                                                                       named_table1, match_history1, 1)
         await ctx.respond(send_str)
@@ -321,7 +315,7 @@ async def on_message(message):
         return
     if "nx" in message.content.lower():
         global member_list1, match_num1, total_num1, match_history1, named_table1
-        if message.channel.id in token_id.CHANNEL_ID1:
+        if message.channel.id == token_id.CHANNEL_ID1:
             [match_num1, total_num1, named_table1, match_history1, send_str] = next_match(message, match_num1,
                                                                                           total_num1,
                                                                                           named_table1, match_history1,
@@ -368,7 +362,7 @@ async def join_mem(ctx):
         return participants, send_str
 
     global member_list1
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         # ボイスチャットに参加しているメンバーを取得
         voicechat_members1 = [i.display_name for i in ctx.channel.members]
         [member_list1, send_str] = member_join(member_list1, voicechat_members1)
@@ -408,7 +402,7 @@ async def match_ctrl(ctx, re_or_pass):
         return match_num, total_num, send_str
 
     global match_num1, total_num1
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [match_num1, total_num1, send_str] = match_control(re_or_pass, match_num1, total_num1, 1)
         await ctx.respond(send_str)
     global match_num2, total_num2
@@ -447,7 +441,7 @@ async def clear(ctx, all_or_1):
         return total_num, match_num, send_str
 
     global match_num1, total_num1
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         [total_num1, match_num1, send_str] = clear_match(1, total_num1, match_num1)
         await ctx.respond(send_str)
     global match_num2, total_num2
@@ -458,7 +452,7 @@ async def clear(ctx, all_or_1):
 
 @bot.slash_command(description="試合結果をテキストファイルで出力します", guild_ids=guild_id)
 async def write(ctx, yyyymmdd):
-    if ctx.channel_id in token_id.CHANNEL_ID1:
+    if ctx.channel_id == token_id.CHANNEL_ID1:
         filename = yyyymmdd + '_' + str(1) + '_' + 'result.txt'
         if os.path.isfile(filename):
             await ctx.respond('ファイルを出力しました')
