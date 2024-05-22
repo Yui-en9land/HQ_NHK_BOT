@@ -79,7 +79,7 @@ def timefile(total_num, named_table, match_num, channel_num):
     d_today = datetime.date.today()
     str_today = d_today.strftime('%Y%m%d')
     # 対戦履歴を現在の日付でテキストに格納
-    with open(str_today + '_' + str(channel_num) + '_' + 'result.txt', 'a') as file:
+    with open(str_today + '_' + str(channel_num) + '_' + 'result.txt', 'a', encoding='utf-8') as file:
         file.write('M{:02d}: {} vs {}\n'.format(total_num, named_table[match_num][0], named_table[match_num][1]))
 
 
@@ -164,8 +164,8 @@ async def on_voice_state_update(member, before, after):
     if before.channel != after.channel:
         # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
 
-        botroom = bot.get_channel(before.channel.id)
-        [member_list1, send_str] = inout_announce(before.channel.id, member_list1, member, before, after)
+        botroom = bot.get_channel(token_id.CHANNEL_ID1)
+        [member_list1, send_str] = inout_announce(token_id.CHANNEL_ID1, member_list1, member, before, after)
         if send_str:
             await botroom.send(send_str)
 
@@ -390,7 +390,7 @@ async def match_ctrl(ctx, re_or_pass):
             d_today = datetime.date.today()
             str_today = d_today.strftime('%Y%m%d')
             filename = str_today + '_' + str(channel_num) + '_' + 'result.txt'
-            with open(filename, 'r+') as file:
+            with open(filename, 'r+', encoding='utf-8') as file:
                 filelist = file.readlines()
                 file.seek(0)
                 file.truncate()
@@ -429,7 +429,7 @@ async def clear(ctx, all_or_1):
             elif all_or_1 == '1':
                 # ナンバリングを一つ戻してテキストファイルから最終行を削除する
                 total_num = max(total_num - 1, 1)
-                with open(filename, 'r+') as file:
+                with open(filename, 'r+', encoding='utf-8') as file:
                     filelist = file.readlines()
                     file.seek(0)
                     file.truncate()
