@@ -286,8 +286,6 @@ async def next(ctx):
 async def on_message(message):
     global member_list1, match_num1, total_num1, match_history1
 
-    if message.author.bot:
-        return
     if "nx" in message.content.lower():
         global member_list1, match_num1, total_num1, match_history1, named_table1
         if message.channel.id == token_id.CHANNEL_ID1:
