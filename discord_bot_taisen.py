@@ -285,6 +285,8 @@ async def next(ctx):
 @bot.event
 async def on_message(message):
     global member_list1, match_num1, total_num1, match_history1
+    if message.author.name == bot.user.name:
+        return
 
     if "nx" in message.content.lower():
         global member_list1, match_num1, total_num1, match_history1, named_table1
