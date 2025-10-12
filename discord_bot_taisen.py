@@ -47,6 +47,19 @@ match_table5 = [
     [3, 4], [1, 2], [4, 0], [2, 3], [0, 1], [2, 4], [1, 3], [0, 2], [1, 4], [0, 3]
 ]
 
+match_table6 = [
+    [5, 4], [3, 2], [1, 0],
+    [5, 3], [4, 2], [0, 5],
+    [4, 1], [3, 0], [5, 2],
+    [4, 0], [3, 1], [2, 0],
+    [5, 1], [4, 3], [2, 1],
+
+    [4, 5], [2, 3], [0, 1],
+    [3, 5], [2, 4], [5, 0],
+    [1, 4], [0, 3], [2, 5],
+    [0, 4], [1, 3], [0, 2],
+    [1, 5], [3, 4], [1, 2]
+]
 
 def table_make(match_table, participants):
     named_table = []
@@ -236,6 +249,8 @@ async def hqstart(ctx):
             named_table = table_make(match_table4, participants)
         elif member_num == 5:
             named_table = table_make(match_table5, participants)
+        elif member_num == 6:
+            named_table = table_make(match_table6, participants)
         else:
             send_str = 'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください'
             return [], send_str
