@@ -252,7 +252,7 @@ async def hqstart(ctx):
         elif member_num == 6:
             named_table = table_make(match_table6, participants)
         else:
-            send_str = 'メンバーが足りないか、多すぎます\n２～５人までしか対応していないため参加者を増やすか減らすかしてください'
+            send_str = 'メンバーが足りないか、多すぎます\n２～6人までしか対応していないため参加者を増やすか減らすかしてください'
             return [], send_str
         send_str = '対戦表を作成しました。'
         return named_table, send_str
